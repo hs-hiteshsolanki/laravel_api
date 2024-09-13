@@ -1,0 +1,6 @@
+ALTER TABLE items CHANGE less less DECIMAL(8,3) NULL;
+ALTER TABLE items CHANGE add add DECIMAL(8,3) NULL, CHANGE net_wt net_wt DECIMAL(8,3) NULL, CHANGE wastage wastage DECIMAL(5,2) NULL, CHANGE fine fine DECIMAL(8,3) NULL;
+ALTER TABLE items CHANGE weight weight DECIMAL(8,3) NULL;
+
+ALTER TABLE items CHANGE touch touch DECIMAL(5,2) NULL;
+

@@ -21,7 +21,7 @@ class ItemController extends Controller
             return response()->json([
                 'status' => 0,
                 'message' => 'Authorization token not provided',
-            ], 400); // Bad Request
+            ], 200); // Bad Request
         }
 
         // Find the user associated with the api_token
@@ -31,7 +31,7 @@ class ItemController extends Controller
             return response()->json([
                 'status' => 0,
                 'message' => 'Token is invalid',
-            ], 401); // Unauthorized
+            ], 200); // Unauthorized
         }
 
         // Fetch items created by the authenticated user

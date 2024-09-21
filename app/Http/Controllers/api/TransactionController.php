@@ -123,10 +123,15 @@ class TransactionController extends Controller
             return response()->json([
                 'status' => 1,
                 'message' => 'Record updated successfully',
+                'data' => [
+                    'transaction' => $transaction,
+                    'party' => $party,
+                    'item' => $item,
+                ],
             ]);
         } else {
             // Create a new transaction if ID is not provided
-            Transaction::create([
+            $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'party_id' => $party->id, // Store the party_id in items table
                 'item' => $item->id,
@@ -147,6 +152,11 @@ class TransactionController extends Controller
         return response()->json([
             'status' => 1,
             'message' => 'Record created successfully',
+            'data' => [
+                'transaction' => $transaction,
+                'party' => $party,
+                'item' => $item,
+            ],
         ]);
     }
 
@@ -262,10 +272,15 @@ class TransactionController extends Controller
             return response()->json([
                 'status' => 1,
                 'message' => 'Record updated successfully',
+                'data' => [
+                    'transaction' => $transaction,
+                    'party' => $party,
+                    'item' => $item,
+                ],
             ]);
         } else {
             // Create a new transaction if ID is not provided
-            Transaction::create([
+            $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'party_id' => $party->id,
                 'item' => $item->id,
@@ -284,6 +299,11 @@ class TransactionController extends Controller
             return response()->json([
                 'status' => 1,
                 'message' => 'Record created successfully',
+                'data' => [
+                    'transaction' => $transaction,
+                    'party' => $party,
+                    'item' => $item,
+                ],
             ]);
         }
     }

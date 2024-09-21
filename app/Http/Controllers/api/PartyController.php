@@ -46,9 +46,9 @@ class PartyController extends Controller
 
         if ($parties->isEmpty()) {
             return response()->json([
-                'status' => 0,
+                'status' => 1,
                 'message' => 'No parties found for the user',
-            ], 404); // Not Found
+            ], 200); // Not Found
         }
 
         return response()->json([

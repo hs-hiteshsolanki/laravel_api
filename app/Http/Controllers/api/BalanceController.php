@@ -13,9 +13,6 @@ class BalanceController extends Controller
 {
     public function fineBalance(Request $request)
     {
-        // Retrieve the api_token from the request headers
-        // $apiToken = str_replace('Bearer ', '', $request->header('Authorization'));
-
         // Retrieve the api_token from the request parameters
         $apiToken = $request->input('api_token');
 
@@ -34,29 +31,35 @@ class BalanceController extends Controller
             return response()->json([
                 'status' => 0,
                 'message' => 'Token is invalid',
-                // 'message' => 'User not authenticated',
             ], 200); // Unauthorized
         }
 
-        // Fetch fine balance records for the authenticated user
+        // Fetch transactions and calculate party-wise fine balance
         $fines = Transaction::where('user_id', $user->id)
             ->join('parties', 'transactions.party_id', '=', 'parties.id')
-            ->select('transactions.id', 'transactions.party_id', 'parties.party_name', 'transactions.fine')
+            ->select('transactions.party_id', 'parties.party_name', 'transactions.type', 'transactions.fine')
             ->get();
+
+        // Group and calculate fine balance for each party
+        $fineBalances = $fines->groupBy('party_id')->map(function ($transactions, $partyId) {
+            $partyName = $transactions->first()->party_name;
+            $fineBalance = $transactions->reduce(function ($carry, $transaction) {
+                return $carry + ($transaction->type === 'receive' ? $transaction->fine : -$transaction->fine);
+            }, 0);
+
+            return [
+                'party_id' => $partyId,
+                'party_name' => $partyName,
+                'fine' => number_format($fineBalance, 3),
+            ];
+        })->values();
 
         // Return the response in the desired format
         return response()->json([
             'status' => 1,
             'message' => 'Success',
             'records' => [
-                'data' => $fines->map(function ($transaction) {
-                    return [
-                        'id' => $transaction->id,
-                        'party_id' => $transaction->party_id,
-                        'party_name' => $transaction->party_name,
-                        'fine' => number_format($transaction->fine, 3) // Format the fine value
-                    ];
-                }),
+                'data' => $fineBalances,
             ],
         ]);
     }
@@ -156,7 +159,7 @@ class BalanceController extends Controller
             return response()->json([
                 'status' => 0,
                 'message' => 'Authorization header not provided',
-            ], 400); // Bad Request
+            ], 200); // Bad Request
         }
 
         $apiToken = str_replace('Bearer ', '', $authorizationHeader);
@@ -168,7 +171,7 @@ class BalanceController extends Controller
             return response()->json([
                 'status' => 0,
                 'message' => 'Token is invalid',
-            ], 401); // Unauthorized
+            ], 200); // Unauthorized
         }
 
         // **3. Retrieve and Process Data**
@@ -180,7 +183,7 @@ class BalanceController extends Controller
             return response()->json([
                 'status' => 0,
                 'message' => 'No records found for the user',
-            ], 404); // Not Found
+            ], 200); // Not Found
         }
 
         // Group by party_name and then by touch
@@ -332,6 +335,56 @@ class BalanceController extends Controller
             ],
         ]);
     }
+
+        // public function fineBalance(Request $request)
+    // {
+    //     // Retrieve the api_token from the request headers
+    //     // $apiToken = str_replace('Bearer ', '', $request->header('Authorization'));
+
+    //     // Retrieve the api_token from the request parameters
+    //     $apiToken = $request->input('api_token');
+
+    //     // Check if the api_token was provided
+    //     if (!$apiToken) {
+    //         return response()->json([
+    //             'status' => 0,
+    //             'message' => 'Authorization token not provided',
+    //         ], 200); // Bad Request
+    //     }
+
+    //     // Find the user associated with the api_token
+    //     $user = userslogin::whereRaw('LOWER(api_token) = ?', [strtolower($apiToken)])->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => 0,
+    //             'message' => 'Token is invalid',
+    //             // 'message' => 'User not authenticated',
+    //         ], 200); // Unauthorized
+    //     }
+
+    //     // Fetch fine balance records for the authenticated user
+    //     $fines = Transaction::where('user_id', $user->id)
+    //         ->join('parties', 'transactions.party_id', '=', 'parties.id')
+    //         ->select('transactions.id', 'transactions.party_id', 'parties.party_name', 'transactions.fine')
+    //         ->get();
+
+    //     // Return the response in the desired format
+    //     return response()->json([
+    //         'status' => 1,
+    //         'message' => 'Success',
+    //         'records' => [
+    //             'data' => $fines->map(function ($transaction) {
+    //                 return [
+    //                     'id' => $transaction->id,
+    //                     'party_id' => $transaction->party_id,
+    //                     'party_name' => $transaction->party_name,
+    //                     'fine' => number_format($transaction->fine, 3) // Format the fine value
+    //                 ];
+    //             }),
+    //         ],
+    //     ]);
+    // }
 
     //     // **3. Retrieve and Process Data**
 
